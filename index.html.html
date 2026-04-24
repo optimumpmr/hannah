@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hannah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0e14;
+    --bg-surface: #111821;
+    --bg-elevated: #182230;
+    --ink: #e8ecef;
+    --ink-dim: #8a96a3;
+    --ink-faint: #4a5568;
+    --accent: #d4a574;
+    --accent-glow: rgba(212, 165, 116, 0.15);
+    --line: rgba(232, 236, 239, 0.08);
+    --line-strong: rgba(232, 236, 239, 0.18);
+    --danger: #c97d7d;
+    --success: #8ab58a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg-deep); color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 17px; line-height: 1.6; position: relative;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at top left, rgba(212, 165, 116, 0.06), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(100, 130, 180, 0.04), transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 3px);
+    pointer-events: none; z-index: 1;
+  }
+  .app { position: relative; z-index: 2; display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
+  .sidebar { background: var(--bg-surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 28px 22px; }
+  .brand { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .brand-mark { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; }
+  .brand-name { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; letter-spacing: -0.01em; line-height: 1; }
+  .brand-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.15em; margin-top: 8px; text-transform: uppercase; }
+  .divider { height: 1px; background: var(--line); margin: 24px 0; }
+  .nav { display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    background: none; border: none; color: var(--ink-dim);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 12px 14px; text-align: left; cursor: pointer;
+    border-left: 2px solid transparent; transition: all 0.2s ease;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .nav-item:hover { color: var(--ink); background: rgba(255,255,255,0.02); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
+  .nav-count { font-size: 10px; color: var(--ink-faint); background: var(--bg-elevated); padding: 2px 7px; border-radius: 2px; }
+  .nav-item.active .nav-count { color: var(--accent); background: rgba(212, 165, 116, 0.12); }
+  .sidebar-foot { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--line); }
+  .status { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; text-transform: uppercase; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .settings-btn { margin-top: 12px; background: none; border: 1px solid var(--line-strong); color: var(--ink-dim); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; padding: 8px 12px; width: 100%; cursor: pointer; transition: all 0.2s; }
+  .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .main { display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .topbar { padding: 20px 32px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); gap: 20px; }
+  .topbar h2 { font-weight: 400; font-size: 24px; letter-spacing: -0.01em; }
+  .topbar h2 em { color: var(--ink-dim); font-weight: 300; }
+  .search-box { flex: 1; max-width: 360px; position: relative; }
+  .search-box input { width: 100%; background: var(--bg-deep); border: 1px solid var(--line-strong); color: var(--ink); font-family: 'Cormorant Garamond', serif; font-size: 15px; padding: 8px 12px 8px 32px; outline: none; transition: border-color 0.2s; }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box::before { content: '⌕'; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); font-size: 16px; }
+  .time { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-faint); letter-spacing: 0.15em; text-transform: uppercase; white-space: nowrap; }
+  .view { flex: 1; overflow-y: auto; padding: 32px; display: none; }
+  .view.active { display: block; }
+  .view::-webkit-scrollbar { width: 6px; }
+  .view::-webkit-scrollbar-track { background: transparent; }
+  .view::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+  #chat-view { padding: 0; display: none; flex-direction: column; }
+  #chat-view.active { display: flex; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 32px 48px; display: flex; flex-direction: column; gap: 24px; }
+  .chat-messages::-webkit-scrollbar { width: 6px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+  .msg { max-width: 75%; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .msg-body { font-size: 17px; line-height: 1.65; white-space: pre-wrap; }
+  .msg.you { align-self: flex-end; text-align: right; }
+  .msg.you .msg-label { color: var(--ink-dim); justify-content: flex-end; }
+  .msg.you .msg-body { background: var(--bg-elevated); padding: 14px 18px; border-radius: 2px; border-right: 2px solid var(--accent); text-align: left; }
+  .msg.hannah .msg-label { color: var(--accent); }
+  .speak-btn { background: none; border: none; color: var(--ink-faint); cursor: pointer; padding: 0 4px; font-size: 12px; transition: color 0.2s; }
+  .speak-btn:hover { color: var(--accent); }
+  .typing { display: inline-flex; gap: 4px; padding: 8px 0; }
+  .typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: bounce 1.2s ease-in-out infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+  .chat-input-wrap { padding: 20px 48px 28px; border-top: 1px solid var(--line); background: var(--bg-surface); }
+  .chat-input { display: flex; gap: 12px; align-items: flex-end; background: var(--bg-deep); border: 1px solid var(--line-strong); padding: 14px 16px; transition: border-color 0.2s; }
+  .chat-input:focus-within { border-color: var(--accent); }
+  .chat-input textarea { flex: 1; background: none; border: none; color: var(--ink); font-family: 'Cormorant Garamond', serif; font-size: 17px; resize: none; outline: none; max-height: 120px; line-height: 1.5; }
+  .mic-btn { background: none; border: 1px solid var(--line-strong); color: var(--ink-dim); cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 14px; }
+  .mic-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .mic-btn.listening { background: var(--accent); color: var(--bg-deep); border-color: var(--accent); animation: micPulse 1s ease-in-out infinite; }
+  @keyframes micPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212, 165, 116, 0.6); } 50% { box-shadow: 0 0 0 8px rgba(212, 165, 116, 0); } }
+  .send-btn { background: var(--accent); color: var(--bg-deep); border: none; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 8px 14px; cursor: pointer; transition: all 0.2s; }
+  .send-btn:hover { background: #e8b98a; }
+  .section-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.25em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 16px; }
+  .add-form { display: flex; gap: 8px; margin-bottom: 24px; }
+  .add-form input, .add-form textarea { flex: 1; background: var(--bg-surface); border: 1px solid var(--line-strong); color: var(--ink); font-family: 'Cormorant Garamond', serif; font-size: 16px; padding: 12px 14px; outline: none; transition: border-color 0.2s; }
+  .add-form input:focus, .add-form textarea:focus { border-color: var(--accent); }
+  .add-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 0 18px; cursor: pointer; transition: all 0.2s; }
+  .add-btn:hover { background: var(--accent); color: var(--bg-deep); }
+  .item { background: var(--bg-surface); border: 1px solid var(--line); border-left: 2px solid var(--line-strong); padding: 14px 18px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; transition: all 0.2s; }
+  .item:hover { border-left-color: var(--accent); }
+  .item.done { opacity: 0.5; }
+  .item.done .item-text { text-decoration: line-through; color: var(--ink-faint); }
+  .item-check { flex-shrink: 0; width: 16px; height: 16px; border: 1px solid var(--line-strong); margin-top: 4px; cursor: pointer; position: relative; transition: all 0.2s; }
+  .item-check:hover { border-color: var(--accent); }
+  .item.done .item-check { background: var(--accent); border-color: var(--accent); }
+  .item.done .item-check::after { content: '✓'; position: absolute; top: -3px; left: 2px; color: var(--bg-deep); font-size: 14px; font-weight: bold; }
+  .item-content { flex: 1; }
+  .item-text { font-size: 17px; line-height: 1.5; }
+  .item-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: var(--ink-faint); text-transform: uppercase; margin-top: 4px; }
+  .item-del { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px; opacity: 0; transition: all 0.2s; }
+  .item:hover .item-del { opacity: 1; }
+  .item-del:hover { color: var(--danger); }
+  .empty { text-align: center; padding: 60px 20px; color: var(--ink-faint); }
+  .empty-mark { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 28px; color: var(--ink-dim); margin-bottom: 8px; }
+  .empty-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .card { background: var(--bg-surface); border: 1px solid var(--line); padding: 24px; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 30px; background: var(--accent); }
+  .card-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.25em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 8px; }
+  .card-value { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300; line-height: 1; color: var(--ink); }
+  .card-desc { font-size: 14px; color: var(--ink-dim); margin-top: 10px; font-style: italic; }
+  .greeting { margin-bottom: 32px; padding: 32px; background: linear-gradient(135deg, var(--bg-surface), var(--bg-elevated)); border: 1px solid var(--line); border-left: 2px solid var(--accent); }
+  .greeting h1 { font-weight: 300; font-size: 36px; letter-spacing: -0.01em; margin-bottom: 8px; }
+  .greeting h1 em { color: var(--accent); font-style: italic; }
+  .greeting p { color: var(--ink-dim); font-size: 16px; max-width: 600px; }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; }
+  .modal-backdrop.show { display: flex; }
+  .modal { background: var(--bg-surface); border: 1px solid var(--line-strong); padding: 32px; max-width: 480px; width: 90%; max-height: 85vh; overflow-y: auto; }
+  .modal h3 { font-weight: 400; font-size: 24px; margin-bottom: 6px; }
+  .modal p { color: var(--ink-dim); font-size: 15px; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .field input, .field textarea, .field select { width: 100%; background: var(--bg-deep); border: 1px solid var(--line-strong); color: var(--ink); font-family: 'Cormorant Garamond', serif; font-size: 16px; padding: 10px 12px; outline: none; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+  .field textarea { min-height: 80px; resize: vertical; }
+  .field-row { display: flex; gap: 10px; align-items: center; }
+  .toggle { position: relative; width: 40px; height: 22px; background: var(--bg-deep); border: 1px solid var(--line-strong); cursor: pointer; border-radius: 11px; transition: all 0.2s; }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: var(--ink-dim); border-radius: 50%; transition: all 0.2s; }
+  .toggle.on::after { left: 20px; background: var(--bg-deep); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
+  .modal-actions button { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 10px 16px; border: 1px solid var(--line-strong); background: none; color: var(--ink); cursor: pointer; transition: all 0.2s; }
+  .modal-actions button:hover { border-color: var(--accent); color: var(--accent); }
+  .modal-actions button.primary { background: var(--accent); color: var(--bg-deep); border-color: var(--accent); }
+  .modal-actions button.primary:hover { background: #e8b98a; }
+  .privacy-note { background: var(--bg-deep); border-left: 2px solid var(--accent); padding: 10px 14px; font-size: 13px; color: var(--ink-dim); font-style: italic; margin-top: 8px; }
+  .data-actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; background: var(--bg-deep); border: 1px solid var(--line); margin-top: 8px; }
+  .data-actions button { flex: 1; min-width: 120px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; padding: 8px; border: 1px solid var(--line-strong); background: none; color: var(--ink-dim); cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+  .data-actions button:hover { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 720px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .chat-messages { padding: 20px; }
+    .chat-input-wrap { padding: 16px 20px 20px; }
+    .view { padding: 20px; }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .topbar { padding: 16px 20px; flex-wrap: wrap; }
+    .search-box { order: 3; width: 100%; max-width: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">v.1.1</span></div>
+    <div class="brand-name">Hannah</div>
+    <div class="brand-sub">Personal Intelligence</div>
+    <div class="divider"></div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="home"><span>Home</span></button>
+      <button class="nav-item" data-view="chat"><span>Converse</span></button>
+      <button class="nav-item" data-view="tasks"><span>Tasks</span><span class="nav-count" id="task-count">0</span></button>
+      <button class="nav-item" data-view="notes"><span>Notes</span><span class="nav-count" id="note-count">0</span></button>
+      <button class="nav-item" data-view="plan"><span>Today</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="status"><span class="status-dot"></span><span id="status-text">Standing by</span></div>
+      <button class="settings-btn" id="open-settings">Configure</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <h2 id="view-title"><em>Home</em></h2>
+      <div class="search-box"><input type="text" id="global-search" placeholder="Search tasks, notes..."></div>
+      <span class="time" id="time-display"></span>
+    </div>
+    <section class="view active" id="home-view">
+      <div class="greeting">
+        <h1 id="greeting-text">Good day.</h1>
+        <p id="greeting-sub">I am Hannah. I hold your tasks, notes, and thoughts. Ask me anything, and I will do my best to help you move forward.</p>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-label">Open Tasks</div>
+          <div class="card-value" id="dash-tasks">0</div>
+          <div class="card-desc" id="dash-tasks-desc">Nothing on your plate.</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Notes Kept</div>
+          <div class="card-value" id="dash-notes">0</div>
+          <div class="card-desc" id="dash-notes-desc">Your memory, preserved.</div>
+        </div>
+      </div>
+      <div class="section-title">— Quick Actions</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <button class="add-btn" data-action="chat-go" style="padding: 18px;">Begin a Conversation</button>
+        <button class="add-btn" data-action="task-go" style="padding: 18px;">Capture a Task</button>
+      </div>
+    </section>
+    <section class="view" id="chat-view">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-wrap">
+        <div class="chat-input">
+          <textarea id="chat-input" rows="1" placeholder="Speak freely..."></textarea>
+          <button class="mic-btn" id="mic-btn" title="Voice input">🎙</button>
+          <button class="send-btn" id="send-btn">Send</button>
+        </div>
+      </div>
+    </section>
+    <section class="view" id="tasks-view">
+      <div class="section-title">— Your Tasks</div>
+      <div class="add-form">
+        <input type="text" id="task-input" placeholder="What needs doing?">
+        <button class="add-btn" id="add-task">Add</button>
+      </div>
+      <div id="tasks-list"></div>
+    </section>
+    <section class="view" id="notes-view">
+      <div class="section-title">— Your Notes</div>
+      <div class="add-form" style="flex-direction: column; align-items: stretch;">
+        <input type="text" id="note-title" placeholder="Title">
+        <textarea id="note-body" placeholder="Write freely..." rows="3" style="resize: vertical;"></textarea>
+        <button class="add-btn" id="add-note" style="padding: 12px;">Save Note</button>
+      </div>
+      <div id="notes-list"></div>
+    </section>
+    <section class="view" id="plan-view">
+      <div class="section-title">— Today's Focus</div>
+      <div class="add-form">
+        <input type="text" id="plan-input" placeholder="What are you doing today?">
+        <button class="add-btn" id="add-plan">Add</button>
+      </div>
+      <div id="plan-list"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="settings-modal">
+  <div class="modal">
+    <h3>Configure Hannah</h3>
+    <p>Her thinking requires an API key. Paste yours below — it stays on this device only.</p>
+    <div class="field">
+      <label>Your Name</label>
+      <input type="text" id="user-name-input" placeholder="What shall I call you?">
+    </div>
+    <div class="field">
+      <label>AI Provider</label>
+      <select id="ai-provider">
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="openai">OpenAI (GPT)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>API Key</label>
+      <input type="password" id="api-key-input" placeholder="sk-...">
+      <div class="privacy-note">Stored only in this browser, on this device. Never sent anywhere except directly to your chosen AI provider when you ask a question.</div>
+    </div>
+    <div class="field">
+      <label>Hannah's Voice</label>
+      <div class="field-row">
+        <div class="toggle" id="voice-toggle"></div>
+        <span style="color: var(--ink-dim); font-size: 14px;">Speak replies aloud</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Hannah's Instructions (optional)</label>
+      <textarea id="system-prompt-input" placeholder="e.g. 'Be direct. Call me out when I'm avoiding something. Remember I'm working on...'"></textarea>
+    </div>
+    <div class="field">
+      <label>Your Data</label>
+      <div class="data-actions">
+        <button id="export-data">Export Backup</button>
+        <button id="import-data">Import Backup</button>
+        <button id="wipe-data" style="color: var(--danger); border-color: var(--danger);">Erase Everything</button>
+      </div>
+      <input type="file" id="import-file" accept="application/json" style="display:none;">
+    </div>
+    <div class="modal-actions">
+      <button id="close-settings">Cancel</button>
+      <button class="primary" id="save-settings">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'hannah_v1';
+  const defaultState = {
+    user: { name: '' },
+    config: { provider: 'anthropic', apiKey: '', systemPrompt: '', voiceOutput: false },
+    tasks: [], notes: [], plan: [], chat: []
+  };
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return JSON.parse(JSON.stringify(defaultState));
+      const loaded = JSON.parse(raw);
+      return {
+        ...defaultState, ...loaded,
+        config: { ...defaultState.config, ...(loaded.config || {}) },
+        user: { ...defaultState.user, ...(loaded.user || {}) }
+      };
+    } catch { return JSON.parse(JSON.stringify(defaultState)); }
+  }
+  function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  const views = document.querySelectorAll('.view');
+  const navItems = document.querySelectorAll('.nav-item');
+  const viewTitle = document.getElementById('view-title');
+  const titles = { home: 'Home', chat: 'Converse', tasks: 'Tasks', notes: 'Notes', plan: 'Today' };
+
+  function switchView(name) {
+    views.forEach(v => v.classList.toggle('active', v.id === `${name}-view`));
+    navItems.forEach(n => n.classList.toggle('active', n.dataset.view === name));
+    viewTitle.innerHTML = `<em>${titles[name]}</em>`;
+    if (name === 'chat') setTimeout(() => document.getElementById('chat-input').focus(), 50);
+  }
+  navItems.forEach(item => item.addEventListener('click', () => switchView(item.dataset.view)));
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.action === 'chat-go') switchView('chat');
+      if (btn.dataset.action === 'task-go') switchView('tasks');
+    });
+  });
+
+  function updateTime() {
+    const n = new Date();
+    document.getElementById('time-display').textContent = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  }
+  updateTime(); setInterval(updateTime, 30000);
+
+  function updateGreeting() {
+    const h = new Date().getHours();
+    const name = state.user.name;
+    let g = 'Good day';
+    if (h < 5) g = 'Still up';
+    else if (h < 12) g = 'Good morning';
+    else if (h < 18) g = 'Good afternoon';
+    else g = 'Good evening';
+    document.getElementById('greeting-text').innerHTML = name ? `${g}, <em>${escapeHtml(name)}</em>.` : `${g}.`;
+  }
+
+  function renderDashboard() {
+    const openTasks = state.tasks.filter(t => !t.done).length;
+    document.getElementById('dash-tasks').textContent = openTasks;
+    document.getElementById('dash-notes').textContent = state.notes.length;
+    document.getElementById('task-count').textContent = openTasks;
+    document.getElementById('note-count').textContent = state.notes.length;
+    const td = document.getElementById('dash-tasks-desc');
+    if (openTasks === 0) td.textContent = 'Nothing on your plate.';
+    else if (openTasks === 1) td.textContent = 'One thing, one step at a time.';
+    else td.textContent = `${openTasks} awaiting your attention.`;
+    document.getElementById('dash-notes-desc').textContent = state.notes.length === 0 ? 'Your memory, preserved.' : 'Thoughts kept safe.';
+  }
+
+  function formatDate(ts) {
+    const d = new Date(ts);
+    const diff = (Date.now() - d) / 1000;
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return d.toLocaleDateString();
+  }
+
+  let searchFilter = '';
+  function renderTasks() {
+    const list = document.getElementById('tasks-list');
+    let tasks = state.tasks;
+    if (searchFilter) tasks = tasks.filter(t => t.text.toLowerCase().includes(searchFilter));
+    if (tasks.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="empty-mark">${searchFilter ? 'Nothing matches' : 'Nothing yet'}</div><div class="empty-sub">— ${searchFilter ? 'Try a different search' : 'Add your first task above'}</div></div>`;
+      return;
+    }
+    const sorted = [...tasks].sort((a, b) => (a.done?1:0) - (b.done?1:0) || b.created - a.created);
+    list.innerHTML = sorted.map(t => `
+      <div class="item ${t.done ? 'done' : ''}">
+        <div class="item-check" data-toggle="${t.id}"></div>
+        <div class="item-content">
+          <div class="item-text">${escapeHtml(t.text)}</div>
+          <div class="item-meta">${formatDate(t.created)}</div>
+        </div>
+        <button class="item-del" data-del-task="${t.id}">Delete</button>
+      </div>`).join('');
+  }
+
+  document.getElementById('add-task').addEventListener('click', addTask);
+  document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const text = input.value.trim();
+    if (!text) return;
+    state.tasks.push({ id: uid(), text, done: false, created: Date.now() });
+    input.value = ''; saveState(); renderTasks(); renderDashboard();
+  }
+  document.getElementById('tasks-list').addEventListener('click', e => {
+    const toggle = e.target.closest('[data-toggle]');
+    if (toggle) {
+      const task = state.tasks.find(t => t.id === toggle.dataset.toggle);
+      if (task) { task.done = !task.done; saveState(); renderTasks(); renderDashboard(); }
+    }
+    const del = e.target.closest('[data-del-task]');
+    if (del) {
+      state.tasks = state.tasks.filter(t => t.id !== del.dataset.delTask);
+      saveState(); renderTasks(); renderDashboard();
+    }
+  });
+
+  function renderNotes() {
+    const list = document.getElementById('notes-list');
+    let notes = state.notes;
+    if (searchFilter) notes = notes.filter(n => n.title.toLowerCase().includes(searchFilter) || n.body.toLowerCase().includes(searchFilter));
+    if (notes.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="empty-mark">${searchFilter ? 'Nothing matches' : 'Blank page'}</div><div class="empty-sub">— ${searchFilter ? 'Try a different search' : 'Your first note awaits'}</div></div>`;
+      return;
+    }
+    list.innerHTML = [...notes].reverse().map(n => `
+      <div class="item" style="flex-direction: column; align-items: stretch;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <div class="item-content">
+            <div class="item-text" style="font-size: 19px; font-weight: 500; margin-bottom: 6px;">${escapeHtml(n.title)}</div>
+            <div style="color: var(--ink-dim); white-space: pre-wrap; font-size: 15px; line-height: 1.6;">${escapeHtml(n.body)}</div>
+            <div class="item-meta" style="margin-top: 10px;">${formatDate(n.created)}</div>
+          </div>
+          <button class="item-del" data-del-note="${n.id}">Delete</button>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('add-note').addEventListener('click', () => {
+    const title = document.getElementById('note-title').value.trim();
+    const body = document.getElementById('note-body').value.trim();
+    if (!title && !body) return;
+    state.notes.push({ id: uid(), title: title || 'Untitled', body, created: Date.now() });
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-body').value = '';
+    saveState(); renderNotes(); renderDashboard();
+  });
+  document.getElementById('notes-list').addEventListener('click', e => {
+    const del = e.target.closest('[data-del-note]');
+    if (del) {
+      state.notes = state.notes.filter(n => n.id !== del.dataset.delNote);
+      saveState(); renderNotes(); renderDashboard();
+    }
+  });
+
+  function renderPlan() {
+    const list = document.getElementById('plan-list');
+    const today = new Date().toDateString();
+    state.plan = state.plan.filter(p => new Date(p.created).toDateString() === today);
+    if (state.plan.length === 0) {
+      list.innerHTML = `<div class="empty"><div class="empty-mark">A fresh day</div><div class="empty-sub">— Set your intentions</div></div>`;
+      return;
+    }
+    list.innerHTML = state.plan.map(p => `
+      <div class="item ${p.done ? 'done' : ''}">
+        <div class="item-check" data-plan-toggle="${p.id}"></div>
+        <div class="item-content"><div class="item-text">${escapeHtml(p.text)}</div></div>
+        <button class="item-del" data-del-plan="${p.id}">Delete</button>
+      </div>`).join('');
+  }
+  document.getElementById('add-plan').addEventListener('click', addPlan);
+  document.getElementById('plan-input').addEventListener('keydown', e => { if (e.key === 'Enter') addPlan(); });
+  function addPlan() {
+    const input = document.getElementById('plan-input');
+    const text = input.value.trim();
+    if (!text) return;
+    state.plan.push({ id: uid(), text, done: false, created: Date.now() });
+    input.value = ''; saveState(); renderPlan();
+  }
+  document.getElementById('plan-list').addEventListener('click', e => {
+    const tog = e.target.closest('[data-plan-toggle]');
+    if (tog) {
+      const p = state.plan.find(x => x.id === tog.dataset.planToggle);
+      if (p) { p.done = !p.done; saveState(); renderPlan(); }
+    }
+    const del = e.target.closest('[data-del-plan]');
+    if (del) {
+      state.plan = state.plan.filter(x => x.id !== del.dataset.delPlan);
+      saveState(); renderPlan();
+    }
+  });
+
+  document.getElementById('global-search').addEventListener('input', e => {
+    searchFilter = e.target.value.trim().toLowerCase();
+    renderTasks(); renderNotes();
+  });
+
+  function renderChat() {
+    const container = document.getElementById('chat-messages');
+    if (state.chat.length === 0) {
+      container.innerHTML = `
+        <div class="msg hannah">
+          <div class="msg-label">Hannah</div>
+          <div class="msg-body">Hello. I'm ready when you are.
+
+If you haven't already, click <em>Configure</em> in the sidebar to add your API key — that's what lets me think through problems with you. Everything you share stays on this device.</div>
+        </div>`;
+      return;
+    }
+    container.innerHTML = state.chat.map((m, i) => `
+      <div class="msg ${m.role === 'user' ? 'you' : 'hannah'}">
+        <div class="msg-label">
+          <span>${m.role === 'user' ? (state.user.name || 'You') : 'Hannah'}</span>
+          ${m.role === 'assistant' ? `<button class="speak-btn" data-speak="${i}" title="Read aloud">♪</button>` : ''}
+        </div>
+        <div class="msg-body">${escapeHtml(m.content)}</div>
+      </div>`).join('');
+    container.scrollTop = container.scrollHeight;
+  }
+
+  document.getElementById('chat-messages').addEventListener('click', e => {
+    const spk = e.target.closest('[data-speak]');
+    if (spk) {
+      const msg = state.chat[parseInt(spk.dataset.speak)];
+      if (msg) speak(msg.content);
+    }
+  });
+
+  const chatInput = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('send-btn');
+  chatInput.addEventListener('input', () => {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+  });
+  chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  sendBtn.addEventListener('click', sendMessage);
+
+  async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    if (!state.config.apiKey) {
+      state.chat.push({ role: 'user', content: text });
+      state.chat.push({ role: 'assistant', content: 'I need an API key before I can think through this with you. Click "Configure" in the sidebar and add one — I recommend Anthropic (console.anthropic.com) or OpenAI (platform.openai.com). Your key never leaves this device.' });
+      saveState(); renderChat();
+      chatInput.value = ''; chatInput.style.height = 'auto'; return;
+    }
+    state.chat.push({ role: 'user', content: text });
+    chatInput.value = ''; chatInput.style.height = 'auto';
+    saveState(); renderChat();
+
+    const container = document.getElementById('chat-messages');
+    const typingEl = document.createElement('div');
+    typingEl.className = 'msg hannah';
+    typingEl.id = 'typing-indicator';
+    typingEl.innerHTML = `<div class="msg-label">Hannah</div><div class="msg-body"><div class="typing"><span></span><span></span><span></span></div></div>`;
+    container.appendChild(typingEl);
+    container.scrollTop = container.scrollHeight;
+
+    try {
+      const reply = await callAI(text);
+      document.getElementById('typing-indicator')?.remove();
+      state.chat.push({ role: 'assistant', content: reply });
+      saveState(); renderChat();
+      if (state.config.voiceOutput) speak(reply);
+    } catch (err) {
+      document.getElementById('typing-indicator')?.remove();
+      state.chat.push({ role: 'assistant', content: `Something went wrong reaching the AI service. ${err.message}\n\nCheck your API key in Configure, and that you have credit with your provider.` });
+      saveState(); renderChat();
+    }
+  }
+
+  async function callAI(userMessage) {
+    const { provider, apiKey, systemPrompt } = state.config;
+    const baseSystem = `You are Hannah, a personal AI assistant. You are professional, focused, calm, and direct. You help the user function, get things done, and solve problems. You are not chatty filler — every response has substance. You remember context from earlier in this conversation. When the user shares a problem, you offer practical next steps. You speak to them like a trusted chief of staff: warm but efficient.${state.user.name ? ` The user's name is ${state.user.name}.` : ''}${systemPrompt ? `\n\nAdditional instructions from your user:\n${systemPrompt}` : ''}`;
+
+    const contextLines = [];
+    const openTasks = state.tasks.filter(t => !t.done);
+    if (openTasks.length) contextLines.push(`Current open tasks:\n${openTasks.map(t => `- ${t.text}`).join('\n')}`);
+    if (state.plan.length) contextLines.push(`Today's plan:\n${state.plan.map(p => `- ${p.done?'[done] ':''}${p.text}`).join('\n')}`);
+    if (state.notes.length) {
+      const recent = state.notes.slice(-5);
+      contextLines.push(`Recent notes (titles only):\n${recent.map(n => `- ${n.title}`).join('\n')}`);
+    }
+    const systemWithContext = contextLines.length ? `${baseSystem}\n\n--- USER CONTEXT ---\n${contextLines.join('\n\n')}` : baseSystem;
+    const history = state.chat.slice(-20).filter(m => m.role === 'user' || m.role === 'assistant');
+
+    if (provider === 'anthropic') {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 1024,
+          system: systemWithContext,
+          messages: history.map(m => ({ role: m.role, content: m.content }))
+        })
+      });
+      if (!res.ok) throw new Error(`${res.status}: ${(await res.text()).slice(0, 200)}`);
+      const data = await res.json();
+      return data.content?.[0]?.text || '(no response)';
+    } else {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: systemWithContext }, ...history.map(m => ({ role: m.role, content: m.content }))]
+        })
+      });
+      if (!res.ok) throw new Error(`${res.status}: ${(await res.text()).slice(0, 200)}`);
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || '(no response)';
+    }
+  }
+
+  // VOICE
+  const micBtn = document.getElementById('mic-btn');
+  let recognition = null;
+  let listening = false;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.onresult = (e) => {
+      let transcript = '';
+      for (let i = 0; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+      chatInput.value = transcript;
+      chatInput.dispatchEvent(new Event('input'));
+    };
+    recognition.onend = () => {
+      listening = false;
+      micBtn.classList.remove('listening');
+      if (chatInput.value.trim()) sendMessage();
+    };
+    recognition.onerror = () => {
+      listening = false;
+      micBtn.classList.remove('listening');
+    };
+  } else {
+    micBtn.style.display = 'none';
+  }
+  micBtn.addEventListener('click', () => {
+    if (!recognition) return;
+    if (listening) { recognition.stop(); return; }
+    try { recognition.start(); listening = true; micBtn.classList.add('listening'); } catch {}
+  });
+
+  function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const clean = text.replace(/\*\*?/g, '').replace(/\n+/g, '. ');
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate = 1.0; u.pitch = 1.0;
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => /female|samantha|karen|victoria|moira|serena/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+    if (preferred) u.voice = preferred;
+    window.speechSynthesis.speak(u);
+  }
+
+  // SETTINGS
+  const modal = document.getElementById('settings-modal');
+  const voiceToggle = document.getElementById('voice-toggle');
+  document.getElementById('open-settings').addEventListener('click', () => {
+    document.getElementById('user-name-input').value = state.user.name || '';
+    document.getElementById('ai-provider').value = state.config.provider;
+    document.getElementById('api-key-input').value = state.config.apiKey;
+    document.getElementById('system-prompt-input').value = state.config.systemPrompt;
+    voiceToggle.classList.toggle('on', !!state.config.voiceOutput);
+    modal.classList.add('show');
+  });
+  document.getElementById('close-settings').addEventListener('click', () => modal.classList.remove('show'));
+  modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+  voiceToggle.addEventListener('click', () => voiceToggle.classList.toggle('on'));
+
+  document.getElementById('save-settings').addEventListener('click', () => {
+    state.user.name = document.getElementById('user-name-input').value.trim();
+    state.config.provider = document.getElementById('ai-provider').value;
+    state.config.apiKey = document.getElementById('api-key-input').value.trim();
+    state.config.systemPrompt = document.getElementById('system-prompt-input').value.trim();
+    state.config.voiceOutput = voiceToggle.classList.contains('on');
+    saveState();
+    updateGreeting(); renderChat();
+    modal.classList.remove('show');
+    document.getElementById('status-text').textContent = state.config.apiKey ? 'Ready' : 'Needs key';
+  });
+
+  document.getElementById('export-data').addEventListener('click', () => {
+    const data = { ...state, config: { ...state.config, apiKey: '' } };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hannah-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('import-data').addEventListener('click', () => {
+    document.getElementById('import-file').click();
+  });
+  document.getElementById('import-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const imported = JSON.parse(text);
+      if (!imported || typeof imported !== 'object') throw new Error('Invalid file');
+      if (!confirm('This will replace your current tasks, notes, plan, and chat history with the backup. Your API key will be kept. Continue?')) return;
+      const keepKey = state.config.apiKey;
+      state = {
+        ...defaultState, ...imported,
+        config: { ...defaultState.config, ...(imported.config || {}), apiKey: keepKey },
+        user: { ...defaultState.user, ...(imported.user || {}) }
+      };
+      saveState();
+      updateGreeting(); renderDashboard(); renderTasks(); renderNotes(); renderPlan(); renderChat();
+      alert('Backup restored.');
+    } catch (err) {
+      alert('Could not read that file. Is it a Hannah backup?');
+    }
+    e.target.value = '';
+  });
+
+  document.getElementById('wipe-data').addEventListener('click', () => {
+    if (!confirm('This permanently erases everything — tasks, notes, plan, chat, and settings. Are you sure?')) return;
+    if (!confirm('Really sure? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = JSON.parse(JSON.stringify(defaultState));
+    saveState();
+    updateGreeting(); renderDashboard(); renderTasks(); renderNotes(); renderPlan(); renderChat();
+    modal.classList.remove('show');
+    document.getElementById('status-text').textContent = 'Needs key';
+  });
+
+  // INIT
+  updateGreeting();
+  renderDashboard(); renderTasks(); renderNotes(); renderPlan(); renderChat();
+  document.getElementById('status-text').textContent = state.config.apiKey ? 'Ready' : 'Needs key';
+  if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = () => {};
+  if (!state.config.apiKey && !state.user.name) {
+    setTimeout(() => document.getElementById('open-settings').click(), 800);
+  }
+})();
+</script>
+</body>
+</html>
